@@ -122,7 +122,7 @@ __move_backward(_BidirectionalIterator1 __first, _Sentinel __last, _Bidirectiona
                     std::is_copy_constructible<_BidirectionalIterator1>::value,
                 "Iterators must be copy constructible.");
 
-  return std::__dispatch_copy_or_move<_AlgPolicy, __move_backward_loop<_AlgPolicy>, __move_backward_trivial>(
+  return std::__dispatch_copy_or_move_backward<_AlgPolicy, __move_backward_loop<_AlgPolicy>, __move_backward_trivial>(
       std::move(__first), std::move(__last), std::move(__result));
 }
 

@@ -118,7 +118,7 @@ struct __copy_backward_trivial {
 template <class _AlgPolicy, class _BidirectionalIterator1, class _Sentinel, class _BidirectionalIterator2>
 _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX20 pair<_BidirectionalIterator1, _BidirectionalIterator2>
 __copy_backward(_BidirectionalIterator1 __first, _Sentinel __last, _BidirectionalIterator2 __result) {
-  return std::__dispatch_copy_or_move<_AlgPolicy, __copy_backward_loop<_AlgPolicy>, __copy_backward_trivial>(
+  return std::__dispatch_copy_or_move_backward<_AlgPolicy, __copy_backward_loop<_AlgPolicy>, __copy_backward_trivial>(
       std::move(__first), std::move(__last), std::move(__result));
 }
 

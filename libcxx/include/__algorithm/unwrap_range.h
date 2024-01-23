@@ -13,7 +13,10 @@
 #include <__concepts/constructible.h>
 #include <__config>
 #include <__iterator/concepts.h>
+#include <__iterator/iterator_traits.h>
 #include <__iterator/next.h>
+#include <__type_traits/enable_if.h>
+#include <__type_traits/integral_constant.h>
 #include <__utility/declval.h>
 #include <__utility/move.h>
 #include <__utility/pair.h>
@@ -88,6 +91,52 @@ _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR _Iter __rewrap_range(_Iter __orig_iter, 
   return std::__rewrap_iter(std::move(__orig_iter), std::move(__iter));
 }
 #endif // _LIBCPP_STD_VER >= 20
+
+template <class _Iter, class _RefIter, class = void>
+struct __can_unwrap_implied_range : false_type {};
+
+template <class _Iter, class _RefIter>
+struct __can_unwrap_implied_range<
+    _Iter,
+    _RefIter,
+    __enable_if_t<__libcpp_is_contiguous_iterator<_Iter>::value && __libcpp_is_contiguous_iterator<_RefIter>::value > >
+    : true_type {};
+
+template <class _Iter,
+          class _RefIter,
+          class _Unwrapped = decltype(std::__unwrap_iter(std::declval<_Iter>())),
+          __enable_if_t<__can_unwrap_implied_range<_Iter, _RefIter>::value, int> = 0>
+_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR _Unwrapped
+__unwrap_implied_range(_Iter __first, const _RefIter& __ref_first, const _RefIter& __ref_last) {
+  (void)(__first + (__ref_last - __ref_first));
+  return std::__unwrap_iter(std::move(__first));
+}
+
+template <class _Iter,
+          class _RefIter,
+          class _Unwrapped = decltype(std::__unwrap_iter(std::declval<_Iter>())),
+          __enable_if_t<!__can_unwrap_implied_range<_Iter, _RefIter>::value, int> = 0>
+_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR _Iter __unwrap_implied_range(_Iter __first, _RefIter&, _RefIter&) {
+  return __first;
+}
+
+template <class _Iter,
+          class _RefIter,
+          class _Unwrapped = decltype(std::__unwrap_iter(std::declval<_Iter>())),
+          __enable_if_t<__can_unwrap_implied_range<_Iter, _RefIter>::value, int> = 0>
+_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR _Unwrapped
+__unwrap_implied_range_backward(_Iter __last, const _RefIter& __ref_first, const _RefIter& __ref_last) {
+  (void)(__last - (__ref_last - __ref_first);
+  return std::__unwrap_iter(std::move(__last));
+}
+
+template <class _Iter,
+          class _RefIter,
+          class _Unwrapped = decltype(std::__unwrap_iter(std::declval<_Iter>())),
+          __enable_if_t<!__can_unwrap_implied_range<_Iter, _RefIter>::value, int> = 0>
+_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR _Iter __unwrap_implied_range_backward(_Iter __last, _RefIter&, _RefIter&) {
+  return __last;
+}
 
 _LIBCPP_END_NAMESPACE_STD
 

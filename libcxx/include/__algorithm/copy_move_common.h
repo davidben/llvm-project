@@ -102,8 +102,9 @@ template <class _Algorithm,
           __enable_if_t<__can_rewrap<_InIter, _Sent, _OutIter>::value, int> = 0>
 _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX17 pair<_InIter, _OutIter>
 __unwrap_and_dispatch(_InIter __first, _Sent __last, _OutIter __out_first) {
-  auto __range  = std::__unwrap_range(__first, std::move(__last));
-  auto __result = _Algorithm()(std::move(__range.first), std::move(__range.second), std::__unwrap_iter(__out_first));
+  auto __range               = std::__unwrap_range(__first, std::move(__last));
+  auto __out_first_unwrapped = std::__unwrap_implied_range(__out_first, __range.first, __range.second);
+  auto __result = _Algorithm()(std::move(__range.first), std::move(__range.second), std::move(__out_first_unwrapped));
   return std::make_pair(std::__rewrap_range<_Sent>(std::move(__first), std::move(__result.first)),
                         std::__rewrap_iter(std::move(__out_first), std::move(__result.second)));
 }
@@ -128,6 +129,42 @@ _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX17 pair<_InIter, _OutIter>
 __dispatch_copy_or_move(_InIter __first, _Sent __last, _OutIter __out_first) {
   using _Algorithm = __overload<_NaiveAlgorithm, _OptimizedAlgorithm>;
   return std::__unwrap_and_dispatch<_Algorithm>(std::move(__first), std::move(__last), std::move(__out_first));
+}
+
+template <class _Algorithm,
+          class _InIter,
+          class _Sent,
+          class _OutIter,
+          __enable_if_t<__can_rewrap<_InIter, _Sent, _OutIter>::value, int> = 0>
+_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX17 pair<_InIter, _OutIter>
+__unwrap_and_dispatch_backward(_InIter __first, _Sent __last, _OutIter __out_last) {
+  auto __range              = std::__unwrap_range(__first, std::move(__last));
+  auto __out_last_unwrapped = std::__unwrap_implied_range_backward(__out_last, __range.first, __range.second);
+  auto __result = _Algorithm()(std::move(__range.first), std::move(__range.second), std::move(__out_last_unwrapped));
+  return std::make_pair(std::__rewrap_range<_Sent>(std::move(__first), std::move(__result.first)),
+                        std::__rewrap_iter(std::move(__out_last), std::move(__result.second)));
+}
+
+template <class _Algorithm,
+          class _InIter,
+          class _Sent,
+          class _OutIter,
+          __enable_if_t<!__can_rewrap<_InIter, _Sent, _OutIter>::value, int> = 0>
+_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX17 pair<_InIter, _OutIter>
+__unwrap_and_dispatch_backward(_InIter __first, _Sent __last, _OutIter __out_last) {
+  return _Algorithm()(std::move(__first), std::move(__last), std::move(__out_last));
+}
+
+template <class _AlgPolicy,
+          class _NaiveAlgorithm,
+          class _OptimizedAlgorithm,
+          class _InIter,
+          class _Sent,
+          class _OutIter>
+_LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX17 pair<_InIter, _OutIter>
+__dispatch_copy_or_move_backward(_InIter __first, _Sent __last, _OutIter __out_last) {
+  using _Algorithm = __overload<_NaiveAlgorithm, _OptimizedAlgorithm>;
+  return std::__unwrap_and_dispatch_backward<_Algorithm>(std::move(__first), std::move(__last), std::move(__out_last));
 }
 
 _LIBCPP_END_NAMESPACE_STD

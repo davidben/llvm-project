@@ -12,6 +12,7 @@
 
 #include <__algorithm/comp.h>
 #include <__algorithm/unwrap_iter.h>
+#include <__algorithm/unwrap_range.h>
 #include <__config>
 #include <__functional/identity.h>
 #include <__functional/invoke.h>
@@ -55,8 +56,10 @@ __equal_iter_impl(_Tp* __first1, _Tp* __last1, _Up* __first2, _BinaryPredicate&)
 template <class _InputIterator1, class _InputIterator2, class _BinaryPredicate>
 _LIBCPP_NODISCARD_EXT inline _LIBCPP_HIDE_FROM_ABI _LIBCPP_CONSTEXPR_SINCE_CXX20 bool
 equal(_InputIterator1 __first1, _InputIterator1 __last1, _InputIterator2 __first2, _BinaryPredicate __pred) {
+  auto __range            = std::__unwrap_range(__first1, __last1);
+  auto __first2_unwrapped = std::__unwrap_implied_range(__first2, __range.first, __range.second);
   return std::__equal_iter_impl(
-      std::__unwrap_iter(__first1), std::__unwrap_iter(__last1), std::__unwrap_iter(__first2), __pred);
+      std::move(__range.first), std::move(__range.second), std::move(__first2_unwrapped), __pred);
 }
 
 template <class _InputIterator1, class _InputIterator2>
