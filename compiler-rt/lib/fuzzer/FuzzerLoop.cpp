@@ -581,7 +581,7 @@ static bool LooseMemeq(const uint8_t *A, const uint8_t *B, size_t Size) {
   const size_t Limit = 64;
   // memcmp cannot be passed empty slices when the pointers are null.
   if (!Size)
-    return 1;
+    return true;
   if (Size <= 64)
     return !memcmp(A, B, Size);
   // Compare first and last Limit/2 bytes.
